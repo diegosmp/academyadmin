@@ -4,3 +4,5 @@
 - Cadastrar / Editar / Remover salas de aula
 - Visualização
 - Gerar relatório
+
+[Voltar](../README.md)
