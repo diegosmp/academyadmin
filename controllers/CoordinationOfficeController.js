@@ -1,9 +1,14 @@
+require('dotenv').config()
 const CoordinationOffice = require("../models/CoordinationOffice")
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+const createUserToken = require("../helpers/createUserToken")
+const storage = require("../config/cloudConfigStorage")
+const uploudCloudStorage = require('../helpers/uploudCloudStorage')
 
 module.exports = class CoordinationOfficeController {
     static async signup (req, res) {
+        const file = req.file
         const {username, email, password, confirmPassword, image} = req.body
 
         if(!username) {
@@ -35,18 +40,26 @@ module.exports = class CoordinationOfficeController {
         const salt = await bcrypt.genSalt(12)
         const passwordHash = await bcrypt.hash(password, salt)
 
-        const newCoord = await CoordinationOffice.create({
-            username,
-            email,
-            password: passwordHash,
-            image
-        })
+
+        if(!file) {
+            return res.status(422).json({ message: 'Nenhuma imagem foi enviada' })
+        }
 
         try {
-            res.status(201).json({ message: 'Usuário cadastrado com sucesso.', newCoord })
+
+            const imageUrl = `${await uploudCloudStorage(file)}`
+
+            const newCoord = await CoordinationOffice.create({
+                username,
+                email,
+                password: passwordHash,
+                image: imageUrl
+            })
+
+            await createUserToken(newCoord, req, res)
+
         } catch (error) {
-            res.status(500).json({ message: 'Erro ao conectar ao servidor.', error })
-            return
+                res.status(500).json({ message: 'Erro ao processar a solicitação.', error })
         }
     }
 }
