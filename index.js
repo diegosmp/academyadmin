@@ -11,4 +11,7 @@ app.use(cors({ credentials: true, origin: 'http://localhost:3000' }))
 
 app.use('/coord', CoordinationOfficeRoute)
 
-conn.sync().then(() => app.listen(PORT)).catch(err => console.error(err))
+conn
+  .sync()
+  .then(() => app.listen(PORT))
+  .catch((err) => console.error(err))
