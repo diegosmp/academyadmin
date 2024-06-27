@@ -4,11 +4,17 @@ const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const createUserToken = require("../helpers/createUserToken")
 const uploudCloudStorage = require('../helpers/uploudCloudStorage')
+const getToken = require('../helpers/getToken')
+const getUserByToken = require('../helpers/getUserByToken')
+
+const TOKEN = process.env.TOKEN
 
 module.exports = class CoordinationOfficeController {
     static async signup (req, res) {
         const file = req.file
-        const {username, email, password, confirmPassword, image} = req.body
+        let imageUrl = ''
+
+        const {username, email, password, confirmPassword} = req.body
 
         if(!username) {
             return res.status(422).json({ message: 'O campo nome é obrigatório.' })
@@ -39,12 +45,11 @@ module.exports = class CoordinationOfficeController {
         const salt = await bcrypt.genSalt(12)
         const passwordHash = await bcrypt.hash(password, salt)
 
-        if(!file) {
-            return res.status(422).json({ message: 'Nenhuma imagem foi enviada' })
+        if(file) {
+            imageUrl = `${await uploudCloudStorage(file)}`
         }
 
         try {
-            const imageUrl = `${await uploudCloudStorage(file)}`
 
             const newCoord = await CoordinationOffice.create({
                 username,
@@ -56,7 +61,7 @@ module.exports = class CoordinationOfficeController {
             await createUserToken(newCoord, req, res)
 
         } catch (error) {
-                res.status(500).json({ message: 'Erro ao processar a solicitação.', error })
+            res.status(500).json({ message: 'Erro ao processar a solicitação.', error })
         }
     }
 
@@ -82,5 +87,91 @@ module.exports = class CoordinationOfficeController {
         }
 
         await createUserToken(user, req, res)
+    }
+
+    static async checkUserToken (req, res) {
+        let currentUser
+
+        if(req.headers.authorization){
+            const token = await getToken(req)
+            const decoded = jwt.verify(token, TOKEN)
+            currentUser = await CoordinationOffice.findByPk(decoded.id)
+            currentUser.password = undefined
+        } else {
+            currentUser = null
+        }
+
+        res.status(200).json(currentUser)
+    }
+
+    static async getCoordById(req, res) {
+        const id = req.params.id
+
+        const user = await CoordinationOffice.findByPk(id, {attributes:{exclude: ['password']}})
+        if(!user) {
+            return res.status(422).json({ message: 'Usuário não encontrado!' })
+        }
+
+        res.status(200).json({ user })
+    }
+
+    static async editCoord(req, res) {
+        console.log(req.body)
+        const id = req.params.id
+        const file = req.file
+        let imageUrl = ''
+        const token = await getToken(req)
+        const user = await getUserByToken(token)
+
+        const {username, email, password, confirmPassword} = req.body
+
+        if(!username) {
+            return res.status(422).json({ message: 'O campo nome é obrigatório.' })
+        }
+        user.username = username
+        
+        if(email) {
+            const emailExists = await CoordinationOffice.findOne({where: {email}})
+            if(user.email !== email && emailExists){
+                return res.status(422).json({ message: 'Por favor utilize outro email!' })
+            }
+        }
+        user.email = email
+        
+        if(password) {
+            if(password !== confirmPassword) {
+                return res.status(422).json({ message: 'A senha não confere!' })
+            } else if(password === confirmPassword && password !== null){
+                const salt = await bcrypt.genSalt(12)
+                const passwordHash = await bcrypt.hash(password, salt)
+    
+                user.password = passwordHash
+            }
+        }
+
+        if(file) {
+            imageUrl = `${await uploudCloudStorage(file)}`
+        }
+
+        try {
+            const updatedUser = await CoordinationOffice.findByPk(id)
+            if(updatedUser) {
+
+                await updatedUser.update({
+                    username: user.username,
+                    email: user.email,
+                    password: user.password,
+                    image: imageUrl
+                })
+    
+                return res.status(200).json({ message: 'Usuário atualizado com sucesso!' })
+
+            } else {
+                return res.status(404).json({ message: 'Usuário não encontrado.' })
+            }
+
+        } catch (error) {
+            res.status(500).json({ message: 'Erro ao processar a solicitação.', error })
+        }
     }
 }
