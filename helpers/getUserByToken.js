@@ -1,6 +1,6 @@
 require('dotenv').config()
 const jwt = require('jsonwebtoken')
-const CoordinationOffice = require('../models/CoordinationOffice')
+const Users = require('../models/Users')
 
 const TOKEN = process.env.TOKEN
 
@@ -10,7 +10,7 @@ const getUserByToken = async (token) => {
   }
   const decoded = jwt.verify(token, TOKEN)
   const userId = decoded.id
-  const user = await CoordinationOffice.findOne({ where: { _id: userId } })
+  const user = await Users.findOne({ where: { _id: userId } })
 
   return user
 }

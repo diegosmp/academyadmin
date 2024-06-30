@@ -2,14 +2,14 @@ require('dotenv').config()
 const cors = require('cors')
 const express = require('express')
 const conn = require('./config/conn')
-const CoordinationOfficeRoute = require('./routes/CoordinationOfficeRoute')
+const UsersRoutes = require('./routes/UsersRoute')
 const PORT = process.env.PORT || 3000
 const app = express()
 
+app.use(cors({ credentials: true, origin: 'http://localhost:5173' }))
 app.use(express.json())
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }))
 
-app.use('/coord', CoordinationOfficeRoute)
+app.use('/users', UsersRoutes)
 
 conn
   .sync()

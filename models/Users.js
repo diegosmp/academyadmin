@@ -1,11 +1,19 @@
 const { DataTypes } = require('sequelize')
 const conn = require('../config/conn')
 
-const CoordinationOffice = conn.define('CoordinationOffice', {
+const Users = conn.define('Users', {
   _id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
+  },
+  firstname: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+  },
+  lastname: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
   },
   username: {
     type: DataTypes.STRING(50),
@@ -25,4 +33,4 @@ const CoordinationOffice = conn.define('CoordinationOffice', {
   },
 })
 
-module.exports = CoordinationOffice
+module.exports = Users

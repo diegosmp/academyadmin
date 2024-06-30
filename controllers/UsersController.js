@@ -1,5 +1,5 @@
 require('dotenv').config()
-const CoordinationOffice = require('../models/CoordinationOffice')
+const Users = require('../models/Users')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 const createUserToken = require('../helpers/createUserToken')
@@ -9,15 +9,24 @@ const getUserByToken = require('../helpers/getUserByToken')
 
 const TOKEN = process.env.TOKEN
 
-module.exports = class CoordinationOfficeController {
+module.exports = class UsersController {
   static async signup(req, res) {
     const file = req.file
     let imageUrl = ''
 
-    const { username, email, password, confirmPassword } = req.body
+    const { username, firstname, lastname, email, password, confirmPassword } =
+      req.body
 
     if (!username) {
       return res.status(422).json({ message: 'O campo nome é obrigatório.' })
+    }
+
+    if (!firstname) {
+      return res.status(422).json({ message: 'O primeiro nome é obrigatório.' })
+    }
+
+    if (!lastname) {
+      return res.status(422).json({ message: 'O segundo nome é obrigatório.' })
     }
 
     if (!email) {
@@ -38,7 +47,7 @@ module.exports = class CoordinationOfficeController {
       return res.status(422).json({ message: 'A senhas não são iguais.' })
     }
 
-    const emailExists = await CoordinationOffice.findOne({ where: { email } })
+    const emailExists = await Users.findOne({ where: { email } })
 
     if (emailExists) {
       return res.status(422).json({ message: 'O email já está cadastrado.' })
@@ -52,8 +61,10 @@ module.exports = class CoordinationOfficeController {
     }
 
     try {
-      const newCoord = await CoordinationOffice.create({
+      const newCoord = await Users.create({
         username,
+        firstname,
+        lastname,
         email,
         password: passwordHash,
         image: imageUrl,
@@ -82,7 +93,7 @@ module.exports = class CoordinationOfficeController {
         .json({ message: 'Email e senha são obrigatorios!' })
     }
 
-    const user = await CoordinationOffice.findOne({ where: { email } })
+    const user = await Users.findOne({ where: { email } })
     if (!user) {
       return res.status(422).json({ message: 'Email ou senha inválido!' })
     }
@@ -101,7 +112,7 @@ module.exports = class CoordinationOfficeController {
     if (req.headers.authorization) {
       const token = await getToken(req)
       const decoded = jwt.verify(token, TOKEN)
-      currentUser = await CoordinationOffice.findByPk(decoded.id)
+      currentUser = await Users.findByPk(decoded.id)
       currentUser.password = undefined
     } else {
       currentUser = null
@@ -110,10 +121,10 @@ module.exports = class CoordinationOfficeController {
     res.status(200).json(currentUser)
   }
 
-  static async getCoordById(req, res) {
+  static async getUserById(req, res) {
     const id = req.params.id
 
-    const user = await CoordinationOffice.findByPk(id, {
+    const user = await Users.findByPk(id, {
       attributes: { exclude: ['password'] },
     })
     if (!user) {
@@ -123,7 +134,7 @@ module.exports = class CoordinationOfficeController {
     res.status(200).json({ user })
   }
 
-  static async editCoord(req, res) {
+  static async editUser(req, res) {
     console.log(req.body)
     const id = req.params.id
     const file = req.file
@@ -139,7 +150,7 @@ module.exports = class CoordinationOfficeController {
     user.username = username
 
     if (email) {
-      const emailExists = await CoordinationOffice.findOne({ where: { email } })
+      const emailExists = await Users.findOne({ where: { email } })
       if (user.email !== email && emailExists) {
         return res
           .status(422)
@@ -164,7 +175,7 @@ module.exports = class CoordinationOfficeController {
     }
 
     try {
-      const updatedUser = await CoordinationOffice.findByPk(id)
+      const updatedUser = await Users.findByPk(id)
       if (updatedUser) {
         await updatedUser.update({
           username: user.username,
