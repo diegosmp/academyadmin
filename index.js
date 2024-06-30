@@ -10,6 +10,11 @@ app.use(cors({ credentials: true, origin: 'http://localhost:5173' }))
 app.use(express.json())
 
 app.use('/users', UsersRoutes)
+app.get('/', (req, res) => {
+  res
+    .status(200)
+    .json({ message: 'https://localhost:5000/users  -  Rota principal' })
+})
 
 conn
   .sync()
