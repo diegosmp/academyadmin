@@ -79,28 +79,24 @@ module.exports = class UsersController {
   }
 
   static async signin(req, res) {
-    const { email, password } = req.body
+    const { username, password } = req.body
 
-    if (!email) {
-      return res
-        .status(422)
-        .json({ message: 'Email e senha são obrigatorios!' })
+    if (!username) {
+      return res.status(422).json({ message: 'Usuário é obrigatorio!' })
     }
 
     if (!password) {
-      return res
-        .status(422)
-        .json({ message: 'Email e senha são obrigatorios!' })
+      return res.status(422).json({ message: 'Senha é obrigatoria!' })
     }
 
     const user = await Users.findOne({ where: { email } })
     if (!user) {
-      return res.status(422).json({ message: 'Email ou senha inválido!' })
+      return res.status(422).json({ message: 'Usuário ou senha inválido!' })
     }
 
     const checkPassword = await bcrypt.compare(password, user.password)
     if (!checkPassword) {
-      return res.status(422).json({ message: 'Email ou senha inválido!' })
+      return res.status(422).json({ message: 'Usuário ou senha inválido!' })
     }
 
     await createUserToken(user, req, res)

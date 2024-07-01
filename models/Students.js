@@ -1,32 +1,26 @@
 const { DataTypes } = require('sequelize')
 const conn = require('../config/conn')
 
-const Trainee = conn.define('Trainee', {
+const Students = conn.define('Students', {
   _id: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
-
-  firstname: {
-    type: DataTypes.STRING(50),
+  name: {
+    type: DataTypes.STRING(100),
     allowNull: false,
   },
-
-  lastname: {
-    type: DataTypes.STRING(50),
-    allowNull: false,
+  email: {
+    type: DataTypes.STRING,
+    unique: true,
+    defaultValue: 'Email não cadastrado',
   },
-
-  username: {
-    type: DataTypes.STRING(25),
+  cpf: {
+    type: DataTypes.STRING,
     allowNull: false,
     unique: true,
   },
-  password: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
 })
 
-module.exports = Trainee
+module.exports = Students

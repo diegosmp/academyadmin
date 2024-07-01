@@ -31,6 +31,11 @@ const Users = conn.define('Users', {
   image: {
     type: DataTypes.STRING,
   },
+
+  owner: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
 })
 
 module.exports = Users
