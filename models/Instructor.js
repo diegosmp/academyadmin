@@ -17,14 +17,14 @@ const Instructor = conn.define('Instructors', {
     type: DataTypes.STRING(50),
     allowNull: false,
   },
-
-  username: {
-    type: DataTypes.STRING(25),
+  email: {
+    type: DataTypes.STRING,
     allowNull: false,
     unique: true,
   },
-  password: {
+  cpf: {
     type: DataTypes.STRING,
+    unique: true,
     allowNull: false,
   },
 })
