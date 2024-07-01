@@ -49,7 +49,7 @@ module.exports = class StudentsController {
   }
 
   static async editStudents(req, res) {
-    const idStudent = req.params.id
+    const id = req.params.id
     const { name, email } = req.body
     if (!name) {
       return res.status(422).json({ message: 'O campo nome é obrigatório!' })
@@ -65,7 +65,7 @@ module.exports = class StudentsController {
       return res.status(422).json({ message: error.message })
     }
 
-    const existsStudent = await Students.findByPk(idStudent)
+    const existsStudent = await Students.findByPk(id)
 
     if (!existsStudent) {
       return res.status(404).json({ message: 'Aluno não cadastrado!' })
@@ -77,7 +77,7 @@ module.exports = class StudentsController {
           name,
           email,
         },
-        { where: { _id: idStudent } },
+        { where: { _id: id } },
       )
       res.status(200).json({ message: 'Aluno atualizado com sucesso!' })
     } catch (error) {
