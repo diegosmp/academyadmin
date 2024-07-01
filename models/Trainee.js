@@ -17,15 +17,10 @@ const Trainee = conn.define('Trainee', {
     type: DataTypes.STRING(50),
     allowNull: false,
   },
-
-  username: {
-    type: DataTypes.STRING(25),
-    allowNull: false,
-    unique: true,
-  },
-  password: {
+  email: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
 })
 

@@ -72,10 +72,13 @@ module.exports = class StudentsController {
     }
 
     try {
-      await Students.update({
-        name,
-        email,
-      })
+      await Students.update(
+        {
+          name,
+          email,
+        },
+        { where: { _id: idStudent } },
+      )
       res.status(200).json({ message: 'Aluno atualizado com sucesso!' })
     } catch (error) {
       res.status(500).json({ message: 'Erro ao conectar com servidor!' })

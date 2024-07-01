@@ -2,6 +2,6 @@ const TraineeController = require('../controllers/TraineeController')
 
 const router = require('express').Router()
 
-router.get('/', TraineeController.createTrainee)
+router.post('/create', TraineeController.createTrainee)
 
 module.exports = router
