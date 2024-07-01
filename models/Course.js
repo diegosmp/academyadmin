@@ -28,7 +28,12 @@ const Course = conn.define('Courses', {
     allowNull: false,
   },
 
-  date: {
+  dateInitial: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+
+  dateEnd: {
     type: DataTypes.DATE,
     allowNull: false,
   },
@@ -49,7 +54,6 @@ const Course = conn.define('Courses', {
 
   roomId: {
     type: DataTypes.UUID,
-    allowNull: false,
     references: {
       model: 'Rooms',
       key: '_id',
@@ -58,7 +62,6 @@ const Course = conn.define('Courses', {
 
   instructorId: {
     type: DataTypes.UUID,
-    allowNull: false,
     references: {
       model: 'Instructors',
       key: '_id',
@@ -67,7 +70,6 @@ const Course = conn.define('Courses', {
 
   traineeId: {
     type: DataTypes.UUID,
-    allowNull: false,
     references: {
       model: 'Trainees',
       key: '_id',
