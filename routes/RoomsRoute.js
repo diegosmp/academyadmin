@@ -2,6 +2,6 @@ const RoomsController = require('../controllers/RoomsController')
 
 const router = require('express').Router()
 
-router.get('/', RoomsController.createRooms)
+router.post('/create', RoomsController.createRooms)
 
 module.exports = router

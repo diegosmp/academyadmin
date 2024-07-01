@@ -15,6 +15,11 @@ const Rooms = conn.define('Rooms', {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
 })
 
 module.exports = Rooms
