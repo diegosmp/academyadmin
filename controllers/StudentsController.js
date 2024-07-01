@@ -47,4 +47,38 @@ module.exports = class StudentsController {
       res.status(500).json({ message: 'Erro ao conectar com servidor!' })
     }
   }
+
+  static async editStudents(req, res) {
+    const idStudent = req.params.id
+    const { name, email } = req.body
+    if (!name) {
+      return res.status(422).json({ message: 'O campo nome é obrigatório!' })
+    }
+
+    if (!email) {
+      return res.status(422).json({ message: 'O campo e-mail é obrigatório!' })
+    }
+
+    try {
+      validateEmail(email)
+    } catch (error) {
+      return res.status(422).json({ message: error.message })
+    }
+
+    const existsStudent = await Students.findByPk(idStudent)
+
+    if (!existsStudent) {
+      return res.status(404).json({ message: 'Aluno não cadastrado!' })
+    }
+
+    try {
+      await Students.update({
+        name,
+        email,
+      })
+      res.status(200).json({ message: 'Aluno atualizado com sucesso!' })
+    } catch (error) {
+      res.status(500).json({ message: 'Erro ao conectar com servidor!' })
+    }
+  }
 }
