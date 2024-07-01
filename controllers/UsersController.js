@@ -6,6 +6,7 @@ const createUserToken = require('../helpers/createUserToken')
 const uploudCloudStorage = require('../helpers/uploudCloudStorage')
 const getToken = require('../helpers/getToken')
 const getUserByToken = require('../helpers/getUserByToken')
+const validateEmail = require('../helpers/validateEmail')
 
 const TOKEN = process.env.TOKEN
 
@@ -31,6 +32,12 @@ module.exports = class UsersController {
 
     if (!email) {
       return res.status(422).json({ message: 'O campo email é obrigatório.' })
+    }
+
+    try {
+      validateEmail(email)
+    } catch (error) {
+      return res.status(422).json({ message: error.message })
     }
 
     if (!password) {

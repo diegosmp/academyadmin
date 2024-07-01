@@ -28,6 +28,6 @@ app.get('/', (req, res) => {
 })
 
 conn
-  .sync({ force: true })
+  .sync()
   .then(() => app.listen(PORT))
   .catch((err) => console.error(err))

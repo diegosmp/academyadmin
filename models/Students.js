@@ -21,6 +21,11 @@ const Students = conn.define('Students', {
     allowNull: false,
     unique: true,
   },
+
+  status: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+  },
 })
 
 module.exports = Students
