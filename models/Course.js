@@ -18,6 +18,35 @@ const Course = conn.define('Courses', {
     allowNull: false,
   },
 
+  hourInitial: {
+    type: DataTypes.TIME,
+    allowNull: false,
+  },
+
+  hourEnd: {
+    type: DataTypes.TIME,
+    allowNull: false,
+  },
+
+  date: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+
+  dayOfWeek: {
+    type: DataTypes.ENUM,
+    values: [
+      'segunda',
+      'terça',
+      'quarta',
+      'quinta',
+      'sexta',
+      'sábado',
+      'domingo',
+    ],
+    allowNull: false,
+  },
+
   roomId: {
     type: DataTypes.UUID,
     allowNull: false,
