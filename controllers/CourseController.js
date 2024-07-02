@@ -1,3 +1,4 @@
+const { Op } = require('sequelize')
 const Course = require('../models/Course')
 const Instructor = require('../models/Instructor')
 const Rooms = require('../models/Rooms')
@@ -17,40 +18,22 @@ module.exports = class CourseController {
       traineeName,
     } = req.body
 
-    if (!roomName) {
-      return res.status(422).json({ message: 'O nome da sala é obrigatório!' })
-    }
+    const requiredFields = [
+      { field: roomName, message: 'O nome da sala é obrigatório!' },
+      { field: instructorCPF, message: 'O CPF do professor é obrigatório!' },
+      { field: traineeName, message: 'O email do estagiário é obrigatório!' },
+      { field: name, message: 'O nome é obrigatório!' },
+      { field: hourInitial, message: 'O horário inicial é obrigatório!' },
+      { field: hourEnd, message: 'O horário final é obrigatório!' },
+      { field: dateInitial, message: 'A data inicial é obrigatório!' },
+      { field: dateEnd, message: 'A data final é obrigatório!' },
+      { field: dayOfWeek, message: 'O dia da semana é obrigatório!' },
+    ]
 
-    const room = await Rooms.findOne({ where: { title: roomName } })
-
-    if (!room) {
-      return res.status(404).json({ message: 'Sala inexistente!' })
-    }
-
-    if (!instructorCPF) {
-      return res
-        .status(422)
-        .json({ message: 'O CPF do professor é obrigatório!' })
-    }
-
-    const instructor = await Instructor.findOne({
-      where: { cpf: instructorCPF },
-    })
-
-    if (!instructor) {
-      return res.status(404).json({ message: 'Professor inexistente!' })
-    }
-
-    if (!traineeName) {
-      return res
-        .status(422)
-        .json({ message: 'O email do estagiário é obrigatório!' })
-    }
-
-    const trainee = await Trainee.findOne({ where: { email: traineeName } })
-
-    if (!trainee) {
-      return res.status(404).json({ message: 'Estagiário inexistente!' })
+    for (const { field, message } of requiredFields) {
+      if (!field) {
+        return res.status(422).json({ message })
+      }
     }
 
     if (!name) {
@@ -127,6 +110,45 @@ module.exports = class CourseController {
       return res
         .status(422)
         .json({ message: 'O dia da semana deve ser um valor válido!' })
+    }
+
+    const room = await Rooms.findOne({ where: { title: roomName } })
+
+    if (!room) {
+      return res.status(404).json({ message: 'Sala inexistente!' })
+    }
+
+    const instructor = await Instructor.findOne({
+      where: { cpf: instructorCPF },
+    })
+
+    if (!instructor) {
+      return res.status(404).json({ message: 'Professor inexistente!' })
+    }
+
+    const trainee = await Trainee.findOne({ where: { email: traineeName } })
+
+    if (!trainee) {
+      return res.status(404).json({ message: 'Estagiário inexistente!' })
+    }
+
+    const conflictingCourses = await Course.findAll({
+      where: {
+        [Op.or]: [
+          { roomId: room._id },
+          { instructorId: instructor._id },
+          { traineeId: trainee._id },
+        ],
+        dayOfWeek,
+        [Op.and]: [
+          { hourInitial: { [Op.lt]: hourEnd } },
+          { hourEnd: { [Op.gt]: hourInitial } },
+        ],
+      },
+    })
+
+    if (conflictingCourses.length > 0) {
+      return res.status(409).json({ message: 'Conflito de horário detectado!' })
     }
 
     try {
