@@ -96,7 +96,7 @@ module.exports = class UsersController {
       return res.status(422).json({ message: 'Senha é obrigatoria!' })
     }
 
-    const user = await Users.findOne({ where: { email } })
+    const user = await Users.findOne({ where: { username } })
     if (!user) {
       return res.status(422).json({ message: 'Usuário ou senha inválido!' })
     }
