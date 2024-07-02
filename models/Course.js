@@ -1,10 +1,9 @@
 const { DataTypes } = require('sequelize')
 const conn = require('../config/conn')
-const Rooms = require('./Rooms')
 const Instructor = require('./Instructor')
 const Trainee = require('./Trainee')
-const Students = require('./Students')
 const Enrollment = require('./Enrollment')
+const Students = require('./Students')
 
 const Course = conn.define('Courses', {
   _id: {
@@ -15,6 +14,17 @@ const Course = conn.define('Courses', {
 
   name: {
     type: DataTypes.STRING(50),
+    allowNull: false,
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
+
+  room: {
+    type: DataTypes.ENUM,
+    values: ['londres', 'berlim', 'moscow'],
     allowNull: false,
   },
 
@@ -52,14 +62,6 @@ const Course = conn.define('Courses', {
     allowNull: false,
   },
 
-  roomId: {
-    type: DataTypes.UUID,
-    references: {
-      model: 'Rooms',
-      key: '_id',
-    },
-  },
-
   instructorId: {
     type: DataTypes.UUID,
     references: {
@@ -77,14 +79,16 @@ const Course = conn.define('Courses', {
   },
 })
 
-Rooms.hasMany(Course, { foreignKey: 'roomId' })
-Course.belongsTo(Rooms, { foreignKey: 'roomId' })
 Instructor.hasMany(Course, { foreignKey: 'instructorId' })
 Course.belongsTo(Instructor, { foreignKey: 'instructorId' })
+
 Trainee.hasMany(Course, { foreignKey: 'traineeId' })
 Course.belongsTo(Trainee, { foreignKey: 'traineeId' })
 
-Course.belongsToMany(Students, { through: Enrollment, foreignKey: 'courseId' })
+Course.belongsToMany(Students, {
+  through: Enrollment,
+  foreignKey: 'courseId',
+})
 Students.belongsToMany(Course, {
   through: Enrollment,
   foreignKey: 'studentId',

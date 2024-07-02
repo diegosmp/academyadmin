@@ -1,28 +1,29 @@
 const { Op } = require('sequelize')
 const Course = require('../models/Course')
 const Instructor = require('../models/Instructor')
-const Rooms = require('../models/Rooms')
 const Trainee = require('../models/Trainee')
 
 module.exports = class CourseController {
   static async createCourse(req, res) {
     const {
       name,
+      title,
+      room,
       hourInitial,
       hourEnd,
       dateInitial,
       dateEnd,
       dayOfWeek,
-      roomName,
       instructorCPF,
       traineeName,
     } = req.body
 
     const requiredFields = [
-      { field: roomName, message: 'O nome da sala é obrigatório!' },
       { field: instructorCPF, message: 'O CPF do professor é obrigatório!' },
       { field: traineeName, message: 'O email do estagiário é obrigatório!' },
       { field: name, message: 'O nome é obrigatório!' },
+      { field: title, message: 'ID da sala obrigatória!' },
+      { field: room, message: 'A sala é obrigatória!' },
       { field: hourInitial, message: 'O horário inicial é obrigatório!' },
       { field: hourEnd, message: 'O horário final é obrigatório!' },
       { field: dateInitial, message: 'A data inicial é obrigatório!' },
@@ -36,33 +37,8 @@ module.exports = class CourseController {
       }
     }
 
-    if (!name) {
-      return res.status(422).json({ message: 'O nome é obrigatório!' })
-    }
-
-    if (!hourInitial) {
-      return res
-        .status(422)
-        .json({ message: 'O horário inicial é obrigatório!' })
-    }
-
-    if (!hourEnd) {
-      return res.status(422).json({ message: 'O horário final é obrigatório!' })
-    }
-
-    if (!dateInitial) {
-      return res.status(422).json({ message: 'A data inicial é obrigatório!' })
-    }
-
-    if (!dateEnd) {
-      return res.status(422).json({ message: 'A data final é obrigatório!' })
-    }
-
-    if (!dayOfWeek) {
-      return res.status(422).json({ message: 'O dia da semana é obrigatório!' })
-    }
-
     const sanitizedName = name.replace(/\s+/g, '')
+    const sanitizedRoom = room.replace(/\s+/g, '').toLowerCase()
 
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/
 
@@ -112,10 +88,10 @@ module.exports = class CourseController {
         .json({ message: 'O dia da semana deve ser um valor válido!' })
     }
 
-    const room = await Rooms.findOne({ where: { title: roomName } })
+    const validRoomsName = ['londres', 'berlim', 'moscow']
 
-    if (!room) {
-      return res.status(404).json({ message: 'Sala inexistente!' })
+    if (!validRoomsName.includes(room)) {
+      return res.status(422).json({ message: 'Digite o nome de sala correta!' })
     }
 
     const instructor = await Instructor.findOne({
@@ -154,12 +130,12 @@ module.exports = class CourseController {
     try {
       const newCourse = await Course.create({
         name: sanitizedName,
+        room: sanitizedRoom,
         hourInitial,
         hourEnd,
         dateInitial,
         dateEnd,
-        dayOfWeek: dayOfWeek,
-        roomId: room._id,
+        dayOfWeek,
         instructorId: instructor._id,
         traineeId: trainee._id,
       })
