@@ -4,32 +4,31 @@ const Students = require('../models/Students')
 
 module.exports = class EnrollmentController {
   static async createEnrollment(req, res) {
-    const { courseId, studentIds } = req.body
+    const { courseName, studentEmail } = req.body
 
-    if (!courseId) {
-      return res.status(422).json({ message: 'O ID do curso é obrigatório!' })
+    if (!courseName) {
+      return res.status(422).json({ message: 'O nome da sala é obrigatório!' })
     }
 
-    if (!studentIds || !Array.isArray(studentIds)) {
+    if (!studentEmail || !Array.isArray(studentEmail)) {
       return res.status(422).json({
-        message:
-          'Os IDs dos alunos são obrigatórios e devem estar em um array!',
+        message: 'Os e-mail dos alunos são obrigatórios!',
       })
     }
 
     try {
-      const course = await Course.findByPk(courseId)
+      const course = await Course.findOne({ where: { name: courseName } })
       if (!course) {
         return res.status(404).json({ message: 'Curso inexistente!' })
       }
 
       const students = await Students.findAll({
         where: {
-          _id: studentIds,
+          email: studentEmail,
         },
       })
 
-      if (students.length !== studentIds.length) {
+      if (students.length !== studentEmail.length) {
         return res
           .status(404)
           .json({ message: 'Um ou mais alunos não foram encontrados!' })
@@ -62,7 +61,7 @@ module.exports = class EnrollmentController {
 
       res.status(200).json(course.Students)
     } catch (error) {
-      res.status(500).json({ message: 'Erro ao buscar os alunos!', error })
+      res.status(500).json({ message: 'Erro ao buscar os alunos!' })
     }
   }
 }

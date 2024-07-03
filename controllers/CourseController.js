@@ -7,23 +7,24 @@ module.exports = class CourseController {
   static async createCourse(req, res) {
     const {
       name,
-      title,
+      course,
       room,
+      capacity,
       hourInitial,
       hourEnd,
       dateInitial,
       dateEnd,
       dayOfWeek,
-      instructorCPF,
+      instructorEmail,
       traineeName,
     } = req.body
 
     const requiredFields = [
-      { field: instructorCPF, message: 'O CPF do professor é obrigatório!' },
-      { field: traineeName, message: 'O email do estagiário é obrigatório!' },
-      { field: name, message: 'O nome é obrigatório!' },
-      { field: title, message: 'ID da sala obrigatória!' },
-      { field: room, message: 'A sala é obrigatória!' },
+      { field: instructorEmail, message: 'O CPF do professor é obrigatório!' },
+      { field: name, message: 'O nome da sala é obrigatório!' },
+      { field: course, message: 'O nome do curso é obrigatório!' },
+      { field: room, message: 'O local da sala é obrigatória!' },
+      { field: capacity, message: 'A quantidade é obrigatória!' },
       { field: hourInitial, message: 'O horário inicial é obrigatório!' },
       { field: hourEnd, message: 'O horário final é obrigatório!' },
       { field: dateInitial, message: 'A data inicial é obrigatório!' },
@@ -38,7 +39,14 @@ module.exports = class CourseController {
     }
 
     const sanitizedName = name.replace(/\s+/g, '')
-    const sanitizedRoom = room.replace(/\s+/g, '').toLowerCase()
+    const sanitizedRoom = room.replace(/\s+/g, '')
+    const itsNumber = /^[0-9]+$/.test(capacity)
+
+    if (!itsNumber) {
+      return res
+        .status(422)
+        .json({ message: 'O campo de capacidade precisa ser um número!' })
+    }
 
     const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/
 
@@ -67,7 +75,7 @@ module.exports = class CourseController {
         .json({ message: 'A data final deve estar no formato YYYY-MM-DD!' })
     }
 
-    if (new Date(dateEnd) <= new Date(dateInitial)) {
+    if (new Date(dateEnd) < new Date(dateInitial)) {
       return res
         .status(422)
         .json({ message: 'A data final deve ser posterior à data inicial!' })
@@ -88,33 +96,33 @@ module.exports = class CourseController {
         .json({ message: 'O dia da semana deve ser um valor válido!' })
     }
 
-    const validRoomsName = ['londres', 'berlim', 'moscow']
+    const validRoomsName = ['Londres', 'Berlim', 'Moscow']
 
     if (!validRoomsName.includes(room)) {
       return res.status(422).json({ message: 'Digite o nome de sala correta!' })
     }
 
     const instructor = await Instructor.findOne({
-      where: { cpf: instructorCPF },
+      where: { email: instructorEmail },
     })
 
     if (!instructor) {
       return res.status(404).json({ message: 'Professor inexistente!' })
     }
 
-    const trainee = await Trainee.findOne({ where: { email: traineeName } })
+    let traineeId = null
+    if (traineeName) {
+      const trainee = await Trainee.findOne({ where: { email: traineeName } })
 
-    if (!trainee) {
-      return res.status(404).json({ message: 'Estagiário inexistente!' })
+      if (!trainee) {
+        return res.status(404).json({ message: 'Estagiário inexistente!' })
+      }
+      traineeId = trainee._id
     }
 
     const conflictingCourses = await Course.findAll({
       where: {
-        [Op.or]: [
-          { roomId: room._id },
-          { instructorId: instructor._id },
-          { traineeId: trainee._id },
-        ],
+        [Op.or]: [{ instructorId: instructor._id }, { traineeId }],
         dayOfWeek,
         [Op.and]: [
           { hourInitial: { [Op.lt]: hourEnd } },
@@ -130,14 +138,16 @@ module.exports = class CourseController {
     try {
       const newCourse = await Course.create({
         name: sanitizedName,
+        course,
         room: sanitizedRoom,
+        capacity,
         hourInitial,
         hourEnd,
         dateInitial,
         dateEnd,
         dayOfWeek,
         instructorId: instructor._id,
-        traineeId: trainee._id,
+        traineeId,
       })
 
       res

@@ -3,5 +3,6 @@ const verifyToken = require('../helpers/verifyToken')
 const router = require('express').Router()
 
 router.post('/create', verifyToken, CourseController.createCourse)
+router.post('/edit/:id', verifyToken, CourseController.createCourse)
 
 module.exports = router

@@ -15,16 +15,21 @@ const Course = conn.define('Courses', {
   name: {
     type: DataTypes.STRING(50),
     allowNull: false,
+    unique: true,
   },
-  title: {
+  course: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
   },
 
   room: {
     type: DataTypes.ENUM,
-    values: ['londres', 'berlim', 'moscow'],
+    values: ['Londres', 'Berlim', 'Moscow'],
+    allowNull: false,
+  },
+
+  capacity: {
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
 
