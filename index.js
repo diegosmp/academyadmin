@@ -21,10 +21,6 @@ app.use('/students', StudentsRoutes)
 app.use('/intructors', InstructorRoutes)
 app.use('/enrollments', EnrollmentRoutes)
 
-app.get('/', (req, res) => {
-  res.status(200).json({ message: 'localhost:5000/users  -  Rota principal' })
-})
-
 conn
   .sync()
   .then(() => app.listen(PORT))

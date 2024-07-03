@@ -15,6 +15,10 @@ module.exports = class UsersController {
     const file = req.file
     let imageUrl = ''
 
+    console.log('Recebendo requisição de signup')
+    console.log('Arquivo recebido:', file)
+    console.log('Dados recebidos:', req.body)
+
     const { username, firstname, lastname, email, password, confirmPassword } =
       req.body
 
@@ -138,7 +142,6 @@ module.exports = class UsersController {
   }
 
   static async editUser(req, res) {
-    console.log(req.body)
     const id = req.params.id
     const file = req.file
     let imageUrl = ''
